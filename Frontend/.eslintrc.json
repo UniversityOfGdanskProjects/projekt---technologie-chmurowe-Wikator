@@ -1,0 +1,6 @@
+{
+  "extends": "next/core-web-vitals",
+    "rules": {
+        "@next/next/no-img-element": "off" // Image caused pictures to load slow when hosted
+    }
+}

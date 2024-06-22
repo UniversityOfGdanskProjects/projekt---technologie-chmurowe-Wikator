@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: wikator/movies-api:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: CloudinarySettings_ApiKey
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: CloudinarySettings_ApiKey
+        - name: CloudinarySettings_ApiSecret
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: CloudinarySettings_ApiSecret
+        - name: CloudinarySettings_CloudName
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: CloudinarySettings_CloudName
+        - name: InitialPassword
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: InitialPassword
+        - name: MqttPassword
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: MqttPassword
+        - name: TokenKey
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: TokenKey
