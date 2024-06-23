@@ -2,9 +2,9 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MoviesService.Api.Extensions;
+using MoviesService.Api.Health;
 using MoviesService.Api.Middleware;
 using MoviesService.DataAccess;
-using MoviesService.DataAccess.Extensions;
 using Neo4j.Driver;
 using Serilog;
 
@@ -13,6 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("Database");
 
 builder.Services.AddApplicationServices();
 builder.Services.AddDataAccessRepositories(builder.Configuration);
@@ -51,6 +54,8 @@ app.UseCors(b => b
     .WithOrigins("http://localhost:3000", "https://moviesservice.onrender.com", "http://192.168.58.2:32000"));
 
 app.UseHttpsRedirection();
+
+app.MapHealthChecks("/healthz");
 
 app.UseAuthentication();
 app.UseMiddleware<UserExistsInDatabaseMiddleware>();

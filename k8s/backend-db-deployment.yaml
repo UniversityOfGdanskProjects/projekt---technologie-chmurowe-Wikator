@@ -21,3 +21,10 @@ spec:
             name: neo4j-config
         ports:
         - containerPort: 7687
+        volumeMounts:
+        - mountPath: /data
+          name: neo4j-data
+      volumes:
+      - name: neo4j-data
+        persistentVolumeClaim:
+          claimName: neo4j-pvc
