@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import Cookies from "js-cookie";
 
 const api: AxiosInstance = axios.create({
-  baseURL: 'http://192.168.58.2:31000/api'
+  baseURL: 'http://movies-api/api'
 });
 
 api.interceptors.request.use(

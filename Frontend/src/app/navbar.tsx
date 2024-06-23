@@ -14,7 +14,7 @@ export default function Navbar() {
   const { count: usersTodayCount, setCount: setUsersTodayCount, incrementCount: incrementUsersTodayCount } = useCount(0);
 
   useEffect(() => {
-    const source = new EventSource('http:/192.168.58.2:3100/api/sse');
+    const source = new EventSource('http://movies-api/api/sse');
 
     source.onmessage = function (event) {
       toast.success(`${event.data} is the most popular movie at the moment. Go check it out!`)

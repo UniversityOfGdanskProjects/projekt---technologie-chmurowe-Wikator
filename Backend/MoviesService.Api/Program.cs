@@ -51,7 +51,10 @@ app.UseCors(b => b
     .AllowAnyHeader()
     .AllowAnyMethod()
     .AllowCredentials()
-    .WithOrigins("http://localhost:3000", "https://moviesservice.onrender.com", "http://192.168.58.2:32000"));
+    .WithOrigins("http://localhost:3000",
+        "https://moviesservice.onrender.com",
+        "http://192.168.58.2:32000",
+        "http://movies-frontend"));
 
 app.UseHttpsRedirection();
 

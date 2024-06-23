@@ -140,7 +140,9 @@ Tutaj wypisujemy szczegółowe informacje o celu powstania projektu (jakaś hist
 
 \subsection{Opis architektury - 8 pkt}
 \label{sec:introduction}
-Aplikacja wykorzystuje Kubernetes jako platformę do rkiestracji kontenerów.
+
+Aplikacja opiera się na mikroserwisach, działających w kontenerach Docker, zarządzanych przez Kubernetes. Do usług, czyli mikroserwisów, należe grafowa baza danych Neo4j, REST API w ASP.NET Core, i interfejs użytkownika NEXT.js. Komunikacja między mikroserwisami odbywa się przez protokoły HTTP i bolt.
+
 
 
 \subsection{Opis infrastruktury - 6 pkt}
@@ -150,6 +152,8 @@ Powinien zawierać informacje na temat środowiska, w którym aplikacja będzie 
 
 \subsection{Opis komponentów aplikacji - 8 pkt}
 \label{sec:FunctionalConditions}
+
+Aplikacja się z 3 składowych, graficzna baza danych (Neo4j) 
 
 Powinna zawierać informacje na temat komponentów aplikacji, takich jak serwisy, aplikacje i bazy danych. W szczególności należy zwrócić uwagę na sposoby ich wdrażania, konfiguracji i zarządzania.
 
