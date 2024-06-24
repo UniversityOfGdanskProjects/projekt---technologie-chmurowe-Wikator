@@ -3,13 +3,13 @@
 \usepackage{dsfont} 
 \usepackage[polish]{babel}
 \usepackage{amsmath}
+\usepackage[T1]{fontenc}
 \usepackage{graphicx}
 \usepackage[top=1in, bottom=1.5in, left=1.25in, right=1.25in]{geometry}
 
 \usepackage{subfig}
 \usepackage{multirow}
 \usepackage{multicol}
-\graphicspath{{Imagens/}}
 \usepackage{xcolor,colortbl}
 \usepackage{float}
 
@@ -85,7 +85,7 @@
 \rhead{\hmwkAuthorName} % Top left header
 \lhead{\hmwkClass: \hmwkTitle} % Top center header
 \rhead{\firstxmark} % Top right header
-\lfoot{Jan Kowalski} % Bottom left footer
+\lfoot{Wiktor Szymulewicz} % Bottom left footer
 \cfoot{} % Bottom center footer
 \rfoot{} % Bottom right footer
 \renewcommand{\headrulewidth}{1pt}
@@ -105,7 +105,7 @@
 	\begin{center}
 	\hspace*{-1cm}
 	\vspace*{0.5cm}
-    \includegraphics[scale=0.55]{imagens/loga.png}\\
+    \includegraphics[scale=0.55]{loga.png}\\
 	\textbf{Uniwersytet Gdański \\ [0.05cm]Wydział Matematyki, Fizyki i Informatyki \\ [0.05cm] Instytut Informatyki}
 
 	\vspace{0.6cm}
@@ -136,59 +136,132 @@
 \section{Opis projektu}
 \label{sec:Project}
 
-Tutaj wypisujemy szczegółowe informacje o celu powstania projektu (jakaś historyjka, że pewna firma/osoba potrzebuje bazy, która ...)
+Aplikacja ta powstała z potrzeby o bardzo wydajną aplikację, w której użytkownicy mogą przeglądać filmy, oraz zostawiać swoje recenzje.
 
 \subsection{Opis architektury - 8 pkt}
 \label{sec:introduction}
 
-Aplikacja opiera się na mikroserwisach, działających w kontenerach Docker, zarządzanych przez Kubernetes. Do usług, czyli mikroserwisów, należe grafowa baza danych Neo4j, REST API w ASP.NET Core, i interfejs użytkownika NEXT.js. Komunikacja między mikroserwisami odbywa się przez protokoły HTTP i bolt.
+Aplikacja opiera się na mikroserwisach, działających w kontenerach Docker, zarządzanych przez Kubernetes. Do mikroserwisów, należy grafowa baza danych Neo4j, REST API w ASP.NET Core, i interfejs użytkownika NEXT.js. Komunikacja między mikroserwisami odbywa się przez protokoły HTTP i bolt.
 
+\begin{itemize}
+  \item \textbf{Grafowa Baza Danych Neo4j} -- Wykorzystywana do przechowywania i zarządzania danymi w formie grafowej.
+  \item \textbf{REST API w ASP.NET Core} -- Pozwala na komunikację z bazą danych, otrzymuje requesty HTTP, oraz nasłuchuje tematy MQTT.
+  \item \textbf{Interfejs Użytkownika NEXT.js} -- Aplikacja frontendowa obsługująca interakcje użytkownika.
+\end{itemize}
 
+Architektura aplikacji w Kubernetes obejmuje następujące komponenty:
+
+\begin{itemize}
+  \item \textbf{Deploymenty/StatefulSety} -- Definiują sposób wdrożenia każdego mikroserwisu. W tej aplikacji, deploymenty głównie konfigurują kontenery.
+  \item \textbf{Serwisy (Services)} -- Umożliwiają na komunikajce między mikroserwisami. Każdy serwis w tej aplikacji jest typu ClusterIP, co oznacza, dostęp do serwisu jest możliwy tylko wewnątrz klastra.
+  \item \textbf{Persistent Volumes (PV)} -- Długotrwałe zasoby dyskowe. Umożliwiają zachowanie danych, nawet kiedy pod bazy danych jest restartowany.
+  \item \textbf{Persistent Volume Claims (PVC)} -- Umożliwia bazie danych żądanie do zasobów PV.
+  \item \textbf{Sekrety (Secrets)} -- Bezpieczne przechowywanie tajnych informacji, takie jak klucze API do zewnętrznych zasobów (takich jak Cloudinary), oraz hasła.
+  \item \textbf{Konfiguracje (ConfigMaps)} -- Zawierują konfiguracje, głównie zmienne środowiskowe oraz mapowanie wolumenów.
+  \item \textbf{Ingressy} -- Zarządzają ruchem sieciowym. Umożliwiają na zewnętrzny dostęp do serwisów typu ClusterIP, poprzez przekierowywanie rządań.
+\end{itemize}
+
+\newpage
 
 \subsection{Opis infrastruktury - 6 pkt}
 \label{sec:Users}
 
-Powinien zawierać informacje na temat środowiska, w którym aplikacja będzie działać, a także wykorzystanych narzędzi i platformy chmurowe. Ważne jest również zwrócenie uwagi na wykorzystanie zasobów, takich jak sieci i pamięci masowej.
+\begin{itemize}
+  \item \textbf{Narzędzia} -- Aplikacja będzie postawiona w AKS (Azure Kubernetes Service). Narzędzie helm umożwliwi instalowanie pakietów.
+  \item \textbf{Dostęp} -- Dostęp do aplikacja będzie możliwy za pomocą TLS. Użytkownik będzie miał jedyniu dostęp do UI oraz API.
+  \item \textbf{Monitorowanie} -- Monitorowanie będzie możliwe za pomocą Azure Portal.
+\end{itemize}
 
 \subsection{Opis komponentów aplikacji - 8 pkt}
 \label{sec:FunctionalConditions}
 
-Aplikacja się z 3 składowych, graficzna baza danych (Neo4j) 
+\subsection{Wewnętrzne komponenty aplikacji}
 
-Powinna zawierać informacje na temat komponentów aplikacji, takich jak serwisy, aplikacje i bazy danych. W szczególności należy zwrócić uwagę na sposoby ich wdrażania, konfiguracji i zarządzania.
+\subsubsection{Neo4j (Baza danych grafowa)}
+\begin{itemize}
+    \item \textbf{Opis}: Neo4j jest graficzną bazą danych, co jest doskonałym modelem dla danych używanych przez Movies Service. Dodana jest również paczka APOC, co umożliwia między innymi na wykonywanie zaplanowanych zadań.
+    \item \textbf{Wdrażanie}: Neo4j jest wdrażany z oficjalnego obrazu jako StatefulSet, co gwarantuje trwałość danych oraz bardziej przewidywalne nazwy podów. PVC jest używany do przechowywania trwałych danych, dzięki czemu dane są przechowywane nawet po zatrzymywaniach replik.
+    \item \textbf{Konfiguracja}: Konfiguracja Neo4j odbywa się za pomocą ConfigMaps oraz Secrets w Kubernetes, gdzie przechowywane są ustawienia konfiguracyjne oraz dane uwierzytelniające.
+\end{itemize}
+
+\subsubsection{ASP.NET (Backend)}
+\begin{itemize}
+    \item \textbf{Opis}: ASP.NET Core jest używany głównie do tworzenia aplikacji backendowych. Framework ten umożliwia na tworzenie bardzo wydajnych API.
+    \item \textbf{Wdrażanie}: Aplikacja ASP.NET jest pakowana jako obraz Docker i wdrażana w Kubernetes jako Deployment. Każda nowa wersja jest wdrażana ściągając obraz z Docker Hub.
+    \item \textbf{Konfiguracja}: Sekrety, takie jak klucze API oraz hasła do bazy danych są przechowywane jako Secrets.
+    \item \textbf{Monitorowanie}: Aplikacja używa paczkę Serilog, która generuje szczegółowe logi.
+\end{itemize}
+
+\newpage
+
+\subsubsection{Next.js (Frontend)}
+\begin{itemize}
+    \item \textbf{Opis}: Next.js jest frameworkiem do budowy aplikacji frontendowych, który wspiera zarówno SSR, jak i interaktywność w przeglądarce. Movies Service używa głównie logikę po stronie przeglądarki.
+    \item \textbf{Wdrażanie}: Aplikacja Next.js jest budowana jako obraz Docker i wdrażana w Kubernetes jako Deployment. Kubernetes ściąga obraz z Docker Hub.
+    \item \textbf{Konfiguracja}: Konfiguracja aplikacji jest zarządzana za pomocą Secrets. Sekrety zawierają jedynie publiczne hasła do brokera MQTT.
+\end{itemize}
+
+\subsection{Zewnętrzne serwisy}
+
+\subsubsection{Cloudinary (Zarządzanie zdjęciami)}
+\begin{itemize}
+    \item \textbf{Opis}: Cloudinary jest zewnętrznym serwisem do zarządzania, optymalizacji i dostarczania zasobów multimedialnych, takich jak obrazy i filmy. Movies Service używa głównie zarządanie o optymalizacje obrazów.
+    \item \textbf{Integracja}: API umożliwia dodawanie zdjęć, na przykład plakaty filmów, i zapisuje te zdjęcia na serwerze Cloudinary. Zapisuje równierz URL do tych zapisanych zdjęć w bazie danych, co potem umożliwia UI na wczytanie tych zdjęć.
+    \item \textbf{Konfiguracja}: Dane konfiguracyjne, takie jak API keys i sekrety, są przechowywane w Kubernetes Secrets.
+    \item \textbf{Zarządzanie}: Cloudinary Dashboard umożliwia za zarządanie, oraz monitorowanie zasobów.
+\end{itemize}
+
+\subsubsection{HiveMQ (Brokering MQTT)}
+\begin{itemize}
+    \item \textbf{Opis}: HiveMQ jest zewnętrzną platformą brokeringową MQTT.
+    \item \textbf{Integracja}: Frontend przysłuchuje się wielu tematom jakie backend może wysłać, na przykład notyfikacjom. Może równiesz wysyłać wiadomości, aby korzystać z interaktywnego, publicznego czatu. Backend przysłuchuje się tym wiadomościom, aby potwierdzić tożsamość nadawcy.
+    \item \textbf{Konfiguracja}: Hasła i hosty do 3 różnych klientów są przechowywane w Secrets. 2 z tych klientów są używane przez frontend, gdzie wszystkie zmienne środowiskowo są widoczne, więc klienci mają ograniczone prawa, na przykład subscribe only. Jest to bezpieczne, ponieważ wszystkie wiadomości wysyłane przez backend nie są przeznaczone dla konkretnych użytkowników.
+    \item \textbf{Zarządzanie}: Monitorowanie odbywa się na stronie internetowej HiveMQ.
+\end{itemize}
 
 \subsection{Konfiguracja i zarządzanie - 4 pkt}
 \label{sec:NonFunctionalConditions}
 
-Powinna zawierać informacje na temat konfiguracji i zarządzania aplikacją na poziomie klastra Kubernetes.
+ConfigMaps głównie konfigurują zmienne środowiskowe dla każdego z deploymentu i StatefulState. Secrets przechowują poufne informacje takie jak klucze API oraz hasła uwierzytelniające. Do zarządzania używane są komendy z CLI kubectl, takie jak:
+
+\begin{itemize}
+    \item \textbf{kubectl delete {komponent} {nazwa}}: Usuwa komponent.
+    \item \textbf{kubectl apply {komponent} {nazwa}}: Tworzy komponent.
+\end{itemize}
 
 \subsection{Zarządzanie błędami - 2 pkt}
 \label{sec:ERD} 
 
-Powinna zawierać informacje na temat sposobów zarządzania błędami aplikacji oraz sposobów monitorowania i reagowania na awarie.
+Deployment backend zawiera liveness probe, który zarządza błędami. Backend zawiera endpoint /healthz, który zwraca informacje o tym, czy aplikacja działa poprawnie. Liveness proba wysyła zapytanie co 10 sekund, i jeżeli aplikacja nie jest zdrowa, to pod jest resetowany.
+
+StatefulState bazy danych również zawiera liveness probe. Tak samo jak backend, jeżeli probe wykryje, że aplikacja nie jest zdrowa, pod jest resetowany.
 
 
 \subsection{Skalowalność - 4 pkt}
 \label{sec:ExamplesSection}
 
-Skalowalność jest kluczowa w architekturze aplikacji opartej na Kubernetes. Należy opisać, jak aplikacja może być skalowana, w jaki sposób skalowanie jest monitorowane i jakie narzędzia są wykorzystywane w tym celu.
+Skalowanie backendu oraz frontendu jest zapewnione przez HPA, czyli Horizontal Pod Autoscaler. Każdy deployment ma skonfigurowane minimalne oraz maksymalne przydzielone zasoby, a kiedy obciążenie staje się za wysokie, HPA automatycznie tworzy kolejne pody. Kiedy obiążenie jest niższe, HPA, automatycznie usuwa pody.
+HPA jest skonfigurowany w taki sposób, że stara się, żeby każdy pod używał 50 swojego CPU. Kiedy nie jest to możliwe, HPA tworzy kolejne pody. HPA jest również skonfigurowany w taki sposób, aby liczba replik wynosiła pomiędzy 1 a 20.
+Backend i frontend używają dwa różne HPA, jednak są one identycznie skonfigurowane.
+Skalowaność zapewniają również ingressy. Ponieważ użyty jest nginx controller, ingressy są atoamtycznie skalowalne w zależnośći od obciążenia
 
 \subsection{Wymagania dotyczące zasobów - 2 pkt}
 \label{sec:ExampleTables}
 
-Powinna zawierać informacje na temat wymagań dotyczących zasobów dla każdego komponentu aplikacji, takie jak ilość pamięci RAM, CPU, miejsce na dysku, itp. Należy również opisać, jakie są oczekiwania dotyczące wydajności i czasu odpowiedzi dla aplikacji.
+\begin{itemize}
+    \item \textbf{Neo4J}: Zakłądająć w miarę wysokie obciążenie, jedna replika baza danych powinna wykorzystywać nie więcej niż 2 rdzenie CPU, oraz 7 GB RAM.
+    \item \textbf{API}: Ponieważ Kubernetes dynamicznie skaluje backend, pojedyncze repliki wykorzystują stosunkowo niewiele zasobów, pomiędzy 0.1-0.2 CPU oraz 256-512 Mi RAM.
+    \item \textbf{frontend}: Podobnie jak API, frontend będzie skalowany horyzontalnie, jednak pojawiają się problemy techniczne, jeżeli zasoby są za małe. Dlatego więc, każdy pod używa 0.5-1 rdzeniów CPU i 2-3 GB pamięci.
+\end{itemize}
 
 
 \subsection{Architektura sieciowa - 4 pkt}
 \label{sec:ExampleResults}
 
-powinna zawierać informacje na temat architektury sieciowej aplikacji, w tym sposobu konfiguracji sieci w klastrze Kubernetes, wykorzystywanych protokołów i narzędzi do zarządzania siecią.
+Każdy serwis, czyli backend-db, backend i frontend, jest typu ClusterIP, co oznacza, że aplikacje mogą komunikować się ze sobą tylko we wnątrz klastra. Ponieważ API oraz frontend muszą być dostępne na zewnątrz klastra, użyty jest ingress, który zapewnia dostęp do tych serwisów.
+API komunikuje się z bazą danych za pomocą protokoły bolt. Użytownik ma dostęp do API oraz UI dzięki protokołowi HTTP. UI również wysyła zapytania do API protokołem HTTP, jednak używa również MQTT, między innymi do interaktywnego, publicznego czatu, oraz SSE, aby wyświetlać reklamy.
+NGINX Ingress Controller zarządza ruchem HTTP. Narzędzie te obsługuje przekierowywania, aby UI oraz API były dostępne na zewnątrz klastra. Zarządza również przepustowością, co zapewnia skalowalność.
 
-\noindent
-\textbf{Każdy odnośnik, który znajdzie się w literaturze musi mieć swoje odwołanie w projekcie. - 2 pkt} 
-
-\bibliographystyle{amsplain}
-\bibliography{references.bib}
-\nocite{*}
+\includegraphics[scale=0.4]{Screenshot from 2024-06-24 21-18-37.png}
 
 \end{document}

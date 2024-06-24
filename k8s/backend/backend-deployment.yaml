@@ -22,10 +22,10 @@ spec:
         resources:
           requests:
             memory: "256Mi"
-            cpu: "120m"
+            cpu: "100m"
           limits:
             memory: "512Mi"
-            cpu: "5000m"
+            cpu: "200m"
         livenessProbe:
           httpGet:
             path: /healthz
@@ -63,3 +63,18 @@ spec:
             secretKeyRef:
               name: backend-secrets
               key: TokenKey
+        - name: Db_Password
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: Db_Password
+        - name: Db_UserName
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: Db_UserName
+        - name: Db_Server
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: Db_Server

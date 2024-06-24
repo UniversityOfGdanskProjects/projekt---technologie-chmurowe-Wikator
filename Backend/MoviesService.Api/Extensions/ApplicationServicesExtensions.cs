@@ -21,14 +21,14 @@ public static class ApplicationServiceExtensions
     
     public static void AddDataAccessRepositories(this IServiceCollection services, IConfiguration config)
     {
-        var server = config.GetConnectionString("Server")
-                     ?? throw new Exception("Connection string not found");
+        var server = config["Db_Server"]
+                     ?? throw new Exception("Db_Server not found");
 
-        var userName = config.GetConnectionString("UserName")
-                       ?? throw new Exception("Connection string not found");
+        var userName = config["Db_UserName"]
+                       ?? throw new Exception("Db_UserName not found");
 
-        var password = config.GetConnectionString("Password")
-                       ?? throw new Exception("Connection string not found");
+        var password = config["Db_Password"]
+                       ?? throw new Exception("Db_Password string not found");
         
         services.AddSingleton(GraphDatabase.Driver(server, AuthTokens.Basic(userName, password)));
         services.AddSingleton<IAsyncQueryExecutor, AsyncQueryExecutor>();

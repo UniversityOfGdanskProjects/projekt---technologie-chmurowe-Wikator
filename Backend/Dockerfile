@@ -23,5 +23,4 @@ RUN dotnet publish "MoviesService.Api/MoviesService.Api.csproj" -c Release -o /a
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENV ASPNETCORE_ENVIRONMENT=Development
 ENTRYPOINT ["dotnet", "MoviesService.Api.dll"]

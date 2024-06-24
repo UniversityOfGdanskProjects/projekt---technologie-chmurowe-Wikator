@@ -277,4 +277,5 @@ TSWLatexianTemp*
 
 
 backend-secrets.yaml
+frontend-secrets.yaml
 
