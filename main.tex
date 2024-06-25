@@ -136,9 +136,9 @@
 \section{Opis projektu}
 \label{sec:Project}
 
-Aplikacja ta powstała z potrzeby o bardzo wydajną aplikację, w której użytkownicy mogą przeglądać filmy, oraz zostawiać swoje recenzje.
+Aplikacja ta powstała z potrzeby o bardzo wydajną aplikację, w której użytkownicy mogą przeglądać filmy, oraz zostawiać swoje recenzje. Movies service pozwala adminom na dodawanie nowych filmów, z opcją publikacja zdjęć, a użytkownicy mogą przeglądać filmy, dodawać do swojej watchlisty, do ulubionych, zostawiać recenzje, oraz komentarze. Aplikacja zapewnia również powiadmienia w czasie rzeczywistym za pomocą protokuły MQTT, takie jak notyfikacje, oraz publiczny czat.
 
-\subsection{Opis architektury - 8 pkt}
+\subsection{Opis architektury}
 \label{sec:introduction}
 
 Aplikacja opiera się na mikroserwisach, działających w kontenerach Docker, zarządzanych przez Kubernetes. Do mikroserwisów, należy grafowa baza danych Neo4j, REST API w ASP.NET Core, i interfejs użytkownika NEXT.js. Komunikacja między mikroserwisami odbywa się przez protokoły HTTP i bolt.
@@ -163,7 +163,7 @@ Architektura aplikacji w Kubernetes obejmuje następujące komponenty:
 
 \newpage
 
-\subsection{Opis infrastruktury - 6 pkt}
+\subsection{Opis infrastruktury}
 \label{sec:Users}
 
 \begin{itemize}
@@ -172,7 +172,7 @@ Architektura aplikacji w Kubernetes obejmuje następujące komponenty:
   \item \textbf{Monitorowanie} -- Monitorowanie będzie możliwe za pomocą Azure Portal.
 \end{itemize}
 
-\subsection{Opis komponentów aplikacji - 8 pkt}
+\subsection{Opis komponentów aplikacji}
 \label{sec:FunctionalConditions}
 
 \subsection{Wewnętrzne komponenty aplikacji}
@@ -219,17 +219,17 @@ Architektura aplikacji w Kubernetes obejmuje następujące komponenty:
     \item \textbf{Zarządzanie}: Monitorowanie odbywa się na stronie internetowej HiveMQ.
 \end{itemize}
 
-\subsection{Konfiguracja i zarządzanie - 4 pkt}
+\subsection{Konfiguracja i zarządzanie}
 \label{sec:NonFunctionalConditions}
 
-ConfigMaps głównie konfigurują zmienne środowiskowe dla każdego z deploymentu i StatefulState. Secrets przechowują poufne informacje takie jak klucze API oraz hasła uwierzytelniające. Do zarządzania używane są komendy z CLI kubectl, takie jak:
+ConfigMaps głównie konfigurują zmienne środowiskowe dla każdego z deploymentu. W przypaku bazy danych, ConfigMap przechowuje zmienne środowiskowe i wolumeny. Secrets przechowują poufne informacje takie jak klucze API oraz hasła uwierzytelniające. Do zarządzania używane są komendy z CLI kubectl, takie jak:
 
 \begin{itemize}
     \item \textbf{kubectl delete {komponent} {nazwa}}: Usuwa komponent.
     \item \textbf{kubectl apply {komponent} {nazwa}}: Tworzy komponent.
 \end{itemize}
 
-\subsection{Zarządzanie błędami - 2 pkt}
+\subsection{Zarządzanie błędami}
 \label{sec:ERD} 
 
 Deployment backend zawiera liveness probe, który zarządza błędami. Backend zawiera endpoint /healthz, który zwraca informacje o tym, czy aplikacja działa poprawnie. Liveness proba wysyła zapytanie co 10 sekund, i jeżeli aplikacja nie jest zdrowa, to pod jest resetowany.
@@ -237,7 +237,7 @@ Deployment backend zawiera liveness probe, który zarządza błędami. Backend z
 StatefulState bazy danych również zawiera liveness probe. Tak samo jak backend, jeżeli probe wykryje, że aplikacja nie jest zdrowa, pod jest resetowany.
 
 
-\subsection{Skalowalność - 4 pkt}
+\subsection{Skalowalność}
 \label{sec:ExamplesSection}
 
 Skalowanie backendu oraz frontendu jest zapewnione przez HPA, czyli Horizontal Pod Autoscaler. Każdy deployment ma skonfigurowane minimalne oraz maksymalne przydzielone zasoby, a kiedy obciążenie staje się za wysokie, HPA automatycznie tworzy kolejne pody. Kiedy obiążenie jest niższe, HPA, automatycznie usuwa pody.
@@ -245,17 +245,17 @@ HPA jest skonfigurowany w taki sposób, że stara się, żeby każdy pod używa�
 Backend i frontend używają dwa różne HPA, jednak są one identycznie skonfigurowane.
 Skalowaność zapewniają również ingressy. Ponieważ użyty jest nginx controller, ingressy są atoamtycznie skalowalne w zależnośći od obciążenia
 
-\subsection{Wymagania dotyczące zasobów - 2 pkt}
+\subsection{Wymagania dotyczące zasobów}
 \label{sec:ExampleTables}
 
 \begin{itemize}
     \item \textbf{Neo4J}: Zakłądająć w miarę wysokie obciążenie, jedna replika baza danych powinna wykorzystywać nie więcej niż 2 rdzenie CPU, oraz 7 GB RAM.
-    \item \textbf{API}: Ponieważ Kubernetes dynamicznie skaluje backend, pojedyncze repliki wykorzystują stosunkowo niewiele zasobów, pomiędzy 0.1-0.2 CPU oraz 256-512 Mi RAM.
+    \item \textbf{API}: Ponieważ Kubernetes dynamicznie skaluje backend, pojedyncze repliki wykorzystują stosunkowo niewiele zasobów, pomiędzy 0.1-0.2 CPU oraz 256-512 Mi RAM. Czas odpowiedzi API wynosi przeważnie poniżej 0.1 sekund, prawie zawsze poniżej 0.2 sekund. Wyjątkiem są zapytania, które wymagaja użycia Cloudinary. Czas odpowiedzi w takich przypadkach znacząco się wydłuża.
     \item \textbf{frontend}: Podobnie jak API, frontend będzie skalowany horyzontalnie, jednak pojawiają się problemy techniczne, jeżeli zasoby są za małe. Dlatego więc, każdy pod używa 0.5-1 rdzeniów CPU i 2-3 GB pamięci.
 \end{itemize}
 
 
-\subsection{Architektura sieciowa - 4 pkt}
+\subsection{Architektura sieciowa}
 \label{sec:ExampleResults}
 
 Każdy serwis, czyli backend-db, backend i frontend, jest typu ClusterIP, co oznacza, że aplikacje mogą komunikować się ze sobą tylko we wnątrz klastra. Ponieważ API oraz frontend muszą być dostępne na zewnątrz klastra, użyty jest ingress, który zapewnia dostęp do tych serwisów.
