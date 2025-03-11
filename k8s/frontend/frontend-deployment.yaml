@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: wikator/movies-frontend:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NEXT_PUBLIC_MQTT_CLIENT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: frontend-secrets
+              key: MqttClientPassword
+        - name: NEXT_PUBLIC_MQTT_CLIENT_CHAT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: frontend-secrets
+              key: MqttClientChatPassword
+        resources:
+          requests:
+            memory: "2G"
+            cpu: "500m"
+          limits:
+            memory: "3G"
+            cpu: "1000m"
